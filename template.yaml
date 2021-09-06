@@ -1,0 +1,165 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  SponsorService
+
+  Sample SAM Template for SponsorService
+
+Parameters:
+  Stage:
+    Type: String
+    Default: 'dev'
+    Description: either "prod" or "dev" determines which secrets and configs to deploy
+
+Globals:
+  Function:
+    Timeout: 20
+
+Resources:
+  MyApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub 'test-sponsors-api-${Stage}'
+      StageName: Prod
+      EndpointConfiguration: REGIONAL
+      # This turns on X-Ray tracing. For more details, see https://meetup.atlassian.net/wiki/spaces/CP/pages/854098408/DIY+Edge+API+Operations#DIYEdgeAPIOperations-Instrumentation
+      TracingEnabled: true
+      MinimumCompressionSize: 0
+      MethodSettings:
+        - ResourcePath: '/*'
+          HttpMethod: '*'
+          MetricsEnabled: 'true'
+      DefinitionBody:
+        swagger: 2.0
+        info:
+          title: !Sub "${AWS::StackName}"
+          version: 1.0
+        paths:
+          /sponsors:
+            get:
+              x-amazon-apigateway-integration:
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetSponsorsFunction.Arn}/invocations"
+                passthroughBehavior: "when_no_match"
+                httpMethod: "POST"
+                type: "aws_proxy"
+          /sponsors/{id}:
+            get:
+              x-amazon-apigateway-integration:
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FindSponsorFunction.Arn}/invocations"
+                passthroughBehavior: "when_no_match"
+                httpMethod: "POST"
+                type: "aws_proxy"
+        x-amazon-apigateway-request-validators:
+          ValidateBody:
+            validateRequestParameters: false
+            validateRequestBody: true
+
+  LambdaFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+                - "edgelambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: !Sub ${AWS::StackName}-lambda-policy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "dynamodb:DescribeTable"
+                  - "dynamodb:Scan"
+                  - "dynamodb:GetItem"
+                  - "dynamodb:Query"
+                  - "dynamodb:BatchGetItem"
+                  - "dynamodb:BatchWriteItem"
+                  - "dynamodb:PutItem"
+                  - "dynamodb:UpdateItem"
+                  - "dynamodb:DeleteItem"
+                  - "ec2:CreateNetworkInterface"
+                  - "ec2:DescribeNetworkInterfaces"
+                  - "ec2:DeleteNetworkInterface"
+                  - "sqs:ReceiveMessage"
+                  - "sqs:SendMessage"
+                  - "sqs:DeleteMessage"
+                  - "sqs:GetQueueAttributes"
+                  - "sqs:GetQueueUrl"
+                  - "sqs:ChangeMessageVisibility"
+                  - "sqs:SetQueueAttributes"
+                Resource: "*"
+
+  GetSponsorsFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: !Sub 'test-java-lambda-get-sponsors-${Stage}'
+      CodeUri: build/libs/SponsorService-all.jar
+      Handler: com.test.handlers.GetSponsorsHandler::handleRequest
+      Runtime: java11
+      Role: !GetAtt LambdaFunctionRole.Arn
+      MemorySize: 512
+      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+        Variables:
+          PARAM1: VALUE
+      Events:
+        MyApi:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            RestApiId: !Ref MyApi
+            Path: /sponsors
+            Method: get
+
+  GetSponsorsFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: [ GetSponsorsFunction ]
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${GetSponsorsFunction}
+      RetentionInDays: 60
+
+  FindSponsorFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      FunctionName: !Sub 'test-java-lambda-find-sponsor-${Stage}'
+      CodeUri: build/libs/SponsorService-all.jar
+      Handler: com.test.handlers.FindSponsorHandler::handleRequest
+      Runtime: java11
+      MemorySize: 512
+      Role: !GetAtt LambdaFunctionRole.Arn
+      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+        Variables:
+          PARAM1: VALUE
+      Events:
+        MyApi:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            RestApiId: !Ref MyApi
+            Path: /sponsors/{id}
+            Method: get
+
+  FindSponsorFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: [ FindSponsorFunction ]
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${FindSponsorFunction}
+      RetentionInDays: 60
+
+Outputs:
+  ApiId:
+    Description: the unique ID associated with the API Gateway
+    Value: !Ref MyApi
+    Export:
+      Name: !Sub "${AWS::StackName}-ApiId"
+  GetSponsorsFunction:
+    Description: "Get sponsors Lambda Function ARN"
+    Value: !GetAtt GetSponsorsFunction.Arn
+  FindSponsorFunction:
+    Description: "Find sponsor Lambda Function ARN"
+    Value: !GetAtt FindSponsorFunction.Arn

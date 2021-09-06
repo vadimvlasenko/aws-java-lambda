@@ -1,0 +1,27 @@
+version = 0.1
+[default.local_invoke.parameters]
+parameter_overrides = [
+    "Stage=dev"
+]
+
+[dev.deploy.parameters]
+s3_bucket = "sam-artifacts-212646169882-us-east-1"
+s3_prefix = "test-java-lambda-dev"
+stack_name = "test-java-lambda-dev"
+region = "us-east-1"
+capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND"
+parameter_overrides = [
+    "Stage=dev"
+]
+tags = "mup:owner=\"meetup-pro\""
+
+[prod.deploy.parameters]
+s3_bucket = "sam-artifacts-212646169882-us-east-1"
+s3_prefix = "test-java-lambda-prod"
+stack_name = "test-java-lambda-prod"
+region = "us-east-1"
+capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND"
+parameter_overrides = [
+    "Stage=prod"
+]
+tags = "mup:owner=\"meetup-pro\""
