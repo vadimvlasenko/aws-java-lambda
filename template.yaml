@@ -151,6 +151,26 @@ Resources:
       LogGroupName: !Sub /aws/lambda/${FindSponsorFunction}
       RetentionInDays: 60
 
+  DeleteSponsorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'test-java-lambda-delete-sponsor-${Stage}'
+      CodeUri: build/libs/SponsorService-all.jar
+      Handler: com.test.handlers.DeleteSponsorHandler::handleRequest
+      Runtime: java11
+      Role: !GetAtt LambdaFunctionRole.Arn
+      MemorySize: 512
+      Environment:
+        Variables:
+          PARAM1: VALUE
+      Events:
+        MyApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MyApi
+            Path: /sponsors/{id}
+            Method: delete
+
 Outputs:
   ApiId:
     Description: the unique ID associated with the API Gateway
