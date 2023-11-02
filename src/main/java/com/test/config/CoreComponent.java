@@ -14,4 +14,5 @@ public interface CoreComponent {
 
     void inject(FindSponsorHandler requestHandler);
 
+    void inject(DeleteSponsorHandler requestHandler);
 }
