@@ -9,6 +9,8 @@ import com.test.service.SponsorService;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
+import java.util.stream.Collectors;
+import java.util.List;
 
 @Slf4j
 public class GetSponsorsHandler extends ApiHandler {
@@ -29,4 +31,10 @@ public class GetSponsorsHandler extends ApiHandler {
                 .withStatusCode(200);
     }
 
+    // Update the getSponsors method to exclude deleted sponsors
+    public List<SponsorModel> getSponsors() {
+        return sponsorService.getSponsors().stream()
+            .filter(sponsor -> !sponsor.isDeleted())
+            .collect(Collectors.toList());
+    }
 }
