@@ -8,6 +8,8 @@ import com.test.errors.ErrorCodes;
 import com.test.errors.SponsorNotFoundException;
 import com.test.model.PayloadError;
 import com.test.service.JsonService;
+import com.test.service.SponsorService;
+import com.test.model.SponsorModel;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
@@ -20,6 +22,8 @@ public abstract class ApiHandler implements RequestHandler<APIGatewayProxyReques
 
     @Inject
     JsonService jsonService;
+    @Inject
+    SponsorService sponsorService;
 
     public abstract APIGatewayProxyResponseEvent handle(APIGatewayProxyRequestEvent input, Context context);
 
@@ -36,6 +40,11 @@ public abstract class ApiHandler implements RequestHandler<APIGatewayProxyReques
             PayloadError error = new PayloadError(ErrorCodes.SERVER_ERROR.getValue(), ex.getMessage());
             return buildServerError(jsonService.toJson(error));
         }
+    }
+
+    // Add this method to handle sponsor deletion
+    public void deleteSponsor(SponsorModel sponsor) {
+        sponsorService.deleteSponsor(sponsor);
     }
 
 }
