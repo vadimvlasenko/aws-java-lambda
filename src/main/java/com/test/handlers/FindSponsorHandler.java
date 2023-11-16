@@ -39,4 +39,9 @@ public class FindSponsorHandler extends ApiHandler {
                 .withStatusCode(200);
     }
 
+    // Add this method to handle sponsor deletion
+    public void deleteSponsor(SponsorModel sponsor) {
+        sponsorService.deleteSponsor(sponsor);
+    }
+
 }
