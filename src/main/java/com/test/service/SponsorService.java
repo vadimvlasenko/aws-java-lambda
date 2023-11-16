@@ -29,4 +29,9 @@ public class SponsorService {
             return new SponsorModel("1", "test");
         }
     }
+
+    // Add this method to delete a sponsor
+    public void deleteSponsor(SponsorModel sponsor) {
+        sponsor.setDeleted(true);
+    }
 }
