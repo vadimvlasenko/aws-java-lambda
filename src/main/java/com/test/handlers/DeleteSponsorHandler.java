@@ -1,0 +1,1 @@
+Create new Java class DeleteSponsorHandler
