@@ -6,7 +6,7 @@ public class SponsorNotFoundException extends RuntimeException {
     }
 
     public SponsorNotFoundException(String message) {
-        super(message);
+        super("Cannot find sponsor with the provided ID");
     }
 
     public SponsorNotFoundException(String message, Throwable cause) {
