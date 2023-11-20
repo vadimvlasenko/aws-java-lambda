@@ -38,4 +38,8 @@ public abstract class ApiHandler implements RequestHandler<APIGatewayProxyReques
         }
     }
 
+public void configureRoutes() {
+    router.delete("/sponsors/{id}", DeleteSponsorHandler.class, "handle");
+}
+
 }
