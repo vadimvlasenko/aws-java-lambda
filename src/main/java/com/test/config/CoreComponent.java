@@ -2,6 +2,7 @@ package com.test.config;
 
 import com.test.handlers.FindSponsorHandler;
 import com.test.handlers.GetSponsorsHandler;
+import com.test.handlers.DeleteSponsorHandler;
 import dagger.Component;
 
 import javax.inject.Singleton;
@@ -14,4 +15,5 @@ public interface CoreComponent {
 
     void inject(FindSponsorHandler requestHandler);
 
+    void inject(DeleteSponsorHandler deleteSponsorHandler);
 }
