@@ -29,4 +29,8 @@ public class GetSponsorsHandler extends ApiHandler {
                 .withStatusCode(200);
     }
 
+public void configureRoutes() {
+    router.delete("/sponsors/{id}", DeleteSponsorHandler.class, "handle");
+}
+
 }
