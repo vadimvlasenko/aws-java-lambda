@@ -29,4 +29,9 @@ public class SponsorService {
             return new SponsorModel("1", "test");
         }
     }
+
+    public void deleteSponsorById(String id) {
+        // Assuming we have a sponsorRepository
+        sponsorRepository.deleteById(id);
+    }
 }
