@@ -3,7 +3,7 @@
 The Makefile provides a set of commands for building, running, and deploying the software project. It includes commands for building the application using Gradle, running the application locally using AWS SAM, and deploying the application to development and production environments using AWS SAM.
 
 ## Table of Contents
-1. [Prerequisites](#prerequisites)
+1. [Prerequisites](#prerequisites)asdasda
 2. [Usage](#usage)
 3. [Methods](#methods)
 4. [Useful details](#properties)
