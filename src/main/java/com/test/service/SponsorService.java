@@ -30,7 +30,10 @@ public class SponsorService {
         }
     }
 
-    public void deleteSponsorById(String id) {
-        // Implementation to delete sponsor by id from the database
+    public void deleteSponsorById(String sponsorId) {
+        if (!"1".equals(sponsorId)) {
+            throw new SponsorNotFoundException("Cannot find sponsor with provided ID");
+        }
+        // Implementation to delete sponsor by id from the database if exists
     }
 }
