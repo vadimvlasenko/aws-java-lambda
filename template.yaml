@@ -22,7 +22,6 @@ Resources:
       Name: !Sub 'test-sponsors-api-${Stage}'
       StageName: Prod
       EndpointConfiguration: REGIONAL
-      # This turns on X-Ray tracing. For more details, see https://meetup.atlassian.net/wiki/spaces/CP/pages/854098408/DIY+Edge+API+Operations#DIYEdgeAPIOperations-Instrumentation
       TracingEnabled: true
       MinimumCompressionSize: 0
       MethodSettings:
@@ -46,6 +45,13 @@ Resources:
             get:
               x-amazon-apigateway-integration:
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FindSponsorFunction.Arn}/invocations"
+                passthroughBehavior: "when_no_match"
+                httpMethod: "POST"
+                type: "aws_proxy"
+          /sponsor/request:
+            post:
+              x-amazon-apigateway-integration:
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ProcessSponsorRequestFunction.Arn}/invocations"
                 passthroughBehavior: "when_no_match"
                 httpMethod: "POST"
                 type: "aws_proxy"
@@ -98,7 +104,7 @@ Resources:
                 Resource: "*"
 
   GetSponsorsFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub 'test-java-lambda-get-sponsors-${Stage}'
       CodeUri: build/libs/SponsorService-all.jar
@@ -106,12 +112,12 @@ Resources:
       Runtime: java11
       Role: !GetAtt LambdaFunctionRole.Arn
       MemorySize: 512
-      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+      Environment:
         Variables:
           PARAM1: VALUE
       Events:
         MyApi:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Type: Api
           Properties:
             RestApiId: !Ref MyApi
             Path: /sponsors
@@ -125,7 +131,7 @@ Resources:
       RetentionInDays: 60
 
   FindSponsorFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub 'test-java-lambda-find-sponsor-${Stage}'
       CodeUri: build/libs/SponsorService-all.jar
@@ -133,12 +139,12 @@ Resources:
       Runtime: java11
       MemorySize: 512
       Role: !GetAtt LambdaFunctionRole.Arn
-      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+      Environment:
         Variables:
           PARAM1: VALUE
       Events:
         MyApi:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Type: Api
           Properties:
             RestApiId: !Ref MyApi
             Path: /sponsors/{id}
@@ -150,6 +156,26 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/lambda/${FindSponsorFunction}
       RetentionInDays: 60
+
+  ProcessSponsorRequestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: process-sponsor-request
+      CodeUri: build/libs/SponsorService-all.jar
+      Handler: com.test.handlers.ApiHandler::handleRequest
+      Runtime: java11
+      Role: !GetAtt LambdaFunctionRole.Arn
+      MemorySize: 512
+      Environment:
+        Variables:
+          PARAM1: VALUE
+      Events:
+        MyApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MyApi
+            Path: /sponsor/request
+            Method: post
 
 Outputs:
   ApiId:
