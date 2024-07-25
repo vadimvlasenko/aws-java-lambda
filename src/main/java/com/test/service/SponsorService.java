@@ -29,4 +29,9 @@ public class SponsorService {
             return new SponsorModel("1", "test");
         }
     }
+    
+    public void deleteSponsorById(String id) {
+        // Your logic to delete the sponsor from the database or storage
+        // For example, if using DynamoDB: dynamoDBMapper.delete(...)
+    }
 }
