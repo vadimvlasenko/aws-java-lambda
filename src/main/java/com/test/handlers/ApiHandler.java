@@ -38,4 +38,12 @@ public abstract class ApiHandler implements RequestHandler<APIGatewayProxyReques
         }
     }
 
+    @Override
+    public APIGatewayProxyResponseEvent handle(APIGatewayProxyRequestEvent input, Context context) {
+        // Implementation goes here
+        return new APIGatewayProxyResponseEvent()
+                .withStatusCode(200)
+                .withBody("{\"message\":\"Sponsor request processed successfully\"}");
+    }
+
 }
