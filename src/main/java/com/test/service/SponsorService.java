@@ -13,8 +13,20 @@ import java.util.List;
 @Slf4j
 public class SponsorService {
 
+    private List<SponsorModel> sponsors;
+
     @Inject
     public SponsorService() {
+        this.sponsors = new ArrayList<>();
+    }
+
+    public SponsorModel addSponsor(SponsorModel sponsor) {
+        sponsors.add(sponsor);
+        return sponsor;
+    }
+
+    public void deleteSponsorById(String id) {
+        sponsors.removeIf(sponsor -> sponsor.getId().equals(id));
     }
 
     public List<SponsorModel> getSponsors() {
